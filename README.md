@@ -6,9 +6,6 @@ Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv
 
 ## Requirements
 
-- Windows with Hyper-V [enabled](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
-- [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
-
 ### Windows
 
 - Windows Hyper-V [enabled](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
