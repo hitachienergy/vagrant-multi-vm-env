@@ -1,16 +1,31 @@
-# Vagrant Hyper-V multi-machine environment
+# Vagrant multi-machine environment
 
-Config file driven Hyper-V multi-machine environment with NAT network and static IP addresses
+Config file driven multi-machine environment with NAT network and static IP addresses. Uses Hyper-V on Windows and Libvirt on Ubuntu.
+
+Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv-multi-vm-env) and [here](https://github.com/seriva/vm-cluster).
 
 ## Requirements
 
 - Windows with Hyper-V [enabled](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
 - [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
 
+### Windows
+
+- Windows Hyper-V [enabled](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
+- [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
+
+### Ubuntu
+
+- Ubuntu with [libvirt](https://ubuntu.com/server/docs/virtualization-libvirt)
+- [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
+- Vagrant [libvirt provider](https://github.com/vagrant-libvirt/vagrant-libvirt)
+
+*Other Linux distros should work but are untested.*
+
 ## Install
 
 ```shell
-git clone --depth=1 https://github.com/to-bar/vagrant-hyperv-multi-vm-env.git
+git clone --depth=1 https://github.com/seriva/vagrant-multi-vm-env.git
 ```
 
 ## Usage
@@ -18,8 +33,16 @@ git clone --depth=1 https://github.com/to-bar/vagrant-hyperv-multi-vm-env.git
 1. Open command prompt as administrator
 2. Go to project's directory
 
+    Windows (Hyper-V):
+
     ```shell
-    cd vagrant-hyperv-multi-vm-env
+    cd vagrant-multi-vm-env/hyperv
+    ```
+
+    Ubuntu (Libvirt):
+
+    ```shell
+    cd vagrant-multi-vm-env/libvirt
     ```
 
 3. Edit `config.yml` file
