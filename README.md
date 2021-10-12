@@ -109,3 +109,11 @@ git clone --depth=1 https://github.com/seriva/vagrant-multi-vm-env.git
         ```shell
         vagrant ssh [options] [name|id] [-- extra ssh args]
         ```
+
+## Supported boxes
+
+This project was tested with the following boxes:
+
+- centos/7
+- generic/rhel7
+- generic/ubuntu1804
