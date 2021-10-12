@@ -3,13 +3,13 @@
 
 START_TIME = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-require_relative('./lib/config_file')
-require_relative('./lib/guest_config')
-require_relative('./lib/hyperv')
+require_relative('../lib/config_file')
+require_relative('../lib/guest_config')
+require_relative('../lib/hyperv')
 
 # --- Globals ---
 
-CONFIG = ConfigFile.load_file_as_symbolized_hash('config.yml')
+CONFIG = ConfigFile.load_file_as_symbolized_hash('hyperv', 'config.yml')
 TARGET_VMS = ConfigFile.get_enabled_vms(CONFIG)
 
 # --- Helpers ---
@@ -58,7 +58,7 @@ if ARGV.include?('up') && ARGV.all? { |arg| !['-h', '--help'].include?(arg) }
   puts "Ensure vSwitch \"#{CONFIG[:network][:vswitch]}\" exists..."
   cmd = [
     'PowerShell',
-    '-File', './scripts/Create-NAT-vSwitch.ps1',
+    '-File', '../scripts/Create-NAT-vSwitch.ps1',
     '-SwitchName', CONFIG[:network][:vswitch],
     '-IPAddress', CONFIG[:network][:gateway][:ip],
     '-PrefixLength', CONFIG[:network][:gateway][:prefix_length].to_s,

@@ -4,10 +4,11 @@ require 'yaml'
 # Provides configuration from YAML file
 module ConfigFile
   # Loads YAML file as symbolized hash
+  # @param provider [String] provider to load from
   # @param filename [String] filename to load
   # @return [Hash] YAML converted into symbolized hash
-  def self.load_file_as_symbolized_hash(filename)
-    yaml = YAML.load_file(File.expand_path("../#{filename}", __dir__))
+  def self.load_file_as_symbolized_hash(provider, filename)
+    yaml = YAML.load_file(File.expand_path("../#{provider}/#{filename}", __dir__))
 
     JSON.parse(yaml.to_json, symbolize_names: true)
   end
