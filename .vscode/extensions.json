@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        // Common
+        "shardulm94.trailing-spaces",
+        // Markdown
+        "davidanson.vscode-markdownlint",
+        // Vagrant
+        "bbenoist.vagrant",
+        // Ruby
+        "rebornix.Ruby",
+        "castwide.solargraph",
+        // Powershell
+        "ms-vscode.powershell"
+    ]
+}
