@@ -19,7 +19,7 @@ Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv
 
 *Other Linux distros should work but are untested.*
 
-## Install
+## Installation
 
 ```shell
 git clone --depth=1 https://github.com/epiphany-platform/vagrant-multi-vm-env.git
