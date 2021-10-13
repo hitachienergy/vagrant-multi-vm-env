@@ -18,8 +18,8 @@ def machine_trigger_after_up!(trigger, target_ip, network_spec, box, verbosity)
   # Order matters, reconfigure network on guest first, then change switch.
   template_values = {
     ip: target_ip,
-    prefix_length: network_spec[:gateway][:prefix_length],
-    gateway_ip: network_spec[:gateway][:ip],
+    prefix_length: network_spec[:vnic][:prefix_length],
+    gateway_ip: network_spec[:vnic][:ip],
     dns1: network_spec[:dns][:dns1],
     dns2: network_spec[:dns][:dns2]
   }
@@ -52,16 +52,16 @@ if print_info?(ARGV)
   end
 end
 
-# Create NAT vSwitch (no 'trigger.before [:up]' in order to run once)
+# Create NAT vSwitch (no 'trigger.before :up' in order to run once)
 if ARGV.include?('up') && ARGV.all? { |arg| !['-h', '--help'].include?(arg) }
   puts '---'
-  puts "Ensure vSwitch \"#{CONFIG[:network][:vswitch]}\" exists..."
+  puts "Ensure vSwitch \"#{CONFIG[:network][:nat][:vswitch]}\" exists..."
   cmd = [
     'PowerShell',
-    '-File', '../scripts/Create-NAT-vSwitch.ps1',
-    '-SwitchName', CONFIG[:network][:vswitch],
-    '-IPAddress', CONFIG[:network][:gateway][:ip],
-    '-PrefixLength', CONFIG[:network][:gateway][:prefix_length].to_s,
+    '-File', '../scripts/Create-NAT-vNet.ps1',
+    '-SwitchName', CONFIG[:network][:nat][:vswitch],
+    '-IPAddress', CONFIG[:network][:nat][:vnic][:ip],
+    '-PrefixLength', CONFIG[:network][:nat][:vnic][:prefix_length].to_s,
     '-NATNetworkAddressPrefix', CONFIG[:network][:nat][:address_prefix],
     '-NATName', CONFIG[:network][:nat][:name]
   ]
@@ -102,7 +102,12 @@ Vagrant.configure(2) do |config|
       end
       machine.trigger.after :up do |trigger|
         trigger.name = 'Set static IP inside VM then change switch'
-        machine_trigger_after_up!(trigger, vm_spec[:ip], CONFIG[:network], config.vm.box, CONFIG[:settings][:verbosity])
+        network_spec = {
+          dns: CONFIG[:network][:dns],
+          vnic: CONFIG[:network][:nat][:vnic],
+          vswitch: CONFIG[:network][:nat][:vswitch]
+        }
+        machine_trigger_after_up!(trigger, vm_spec[:ip], network_spec, config.vm.box, CONFIG[:settings][:verbosity])
       end
     end
   end
