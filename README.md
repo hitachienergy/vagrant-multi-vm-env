@@ -1,6 +1,6 @@
 # Vagrant multi-machine environment
 
-Config file driven multi-machine environment with NAT network and static IP addresses. Uses Hyper-V on Windows and Libvirt on Ubuntu.
+Config file driven multi-machine environment with NAT network and static IP addresses. Uses Hyper-V on Windows, Libvirt on Ubuntu and VirtualBox on MacOS.
 
 Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv-multi-vm-env) and [here](https://github.com/seriva/vm-cluster).
 
