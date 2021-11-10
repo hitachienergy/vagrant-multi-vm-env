@@ -11,6 +11,12 @@ Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv
 - Windows Hyper-V [enabled](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
 - [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
 
+### MacOs
+
+- Virtualbox: `brew install virtualbox`
+- Vagrant: `brew install vagrant`
+- Vagrant Manager: `brew install vagrant-manager`
+
 ### Ubuntu
 
 - Ubuntu with [libvirt](https://ubuntu.com/server/docs/virtualization-libvirt)
@@ -40,6 +46,12 @@ git clone --depth=1 https://github.com/epiphany-platform/vagrant-multi-vm-env.gi
 
     ```shell
     cd vagrant-multi-vm-env/libvirt
+    ```
+
+    MacOs (VirtualBox):
+
+    ```shell
+    cd vagrant-multi-vm-env/virtualbox
     ```
 
 3. Edit `config.yml` file
