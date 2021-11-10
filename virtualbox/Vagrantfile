@@ -54,7 +54,19 @@ Vagrant.configure(2) do |config|
   TARGET_VMS.each do |vm_spec|
     config.vm.define vm_spec[:name] do |machine|
       machine.vm.hostname = vm_spec[:hostname]
-      machine.vm.network "public_network", ip: vm_spec[:ip]
+      machine.vm.network "public_network",
+        ip: vm_spec[:ip]
+
+      # default router
+      machine.vm.provision "shell",
+        run: "always",
+        inline: "route add default gw 192.168.1.1"
+
+      # delete default gw on eth0
+      machine.vm.provision "shell",
+        run: "always",
+        inline: "eval $(route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }')"
+
       machine.vm.provider 'virtualbox' do |provider|
         provider.cpus = vm_spec[:cpus]
         provider.memory = vm_spec[:memory]
