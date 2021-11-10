@@ -11,7 +11,7 @@ Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv
 - Windows Hyper-V [enabled](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
 - [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
 
-### MacOs
+### MacOS
 
 - Virtualbox: `brew install virtualbox`
 - Vagrant: `brew install vagrant`
@@ -48,7 +48,7 @@ git clone --depth=1 https://github.com/epiphany-platform/vagrant-multi-vm-env.gi
     cd vagrant-multi-vm-env/libvirt
     ```
 
-    MacOs (VirtualBox):
+    MacOS (VirtualBox):
 
     ```shell
     cd vagrant-multi-vm-env/virtualbox
