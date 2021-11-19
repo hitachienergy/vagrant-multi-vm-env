@@ -1,0 +1,90 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+START_TIME = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+require_relative('../lib/config_file')
+require_relative('../lib/guest_config')
+
+# --- Globals ---
+
+CONFIG = ConfigFile.load_file_as_symbolized_hash('virtualbox', 'config.yml')
+TARGET_VMS = ConfigFile.get_enabled_vms(CONFIG)
+
+# --- Helpers ---
+
+def print_info?(argv)
+  argv.any? { |arg| %w[up halt destroy].include?(arg) } && argv.all? { |arg| !['-h', '--help'].include?(arg) }
+end
+
+# --- Run ---
+
+# Print info
+if print_info?(ARGV)
+  puts "Group: #{CONFIG[:vm_group]}"
+  puts 'Target VMs:'
+  name_max_length = TARGET_VMS.map { |vm| vm[:name] }.map(&:length).max
+  TARGET_VMS.each_with_index do |vm, index|
+    printf "%<index>2d) %<name>-#{name_max_length}s\n", index: index + 1, name: vm[:name]
+  end
+end
+
+Vagrant.configure(2) do |config|
+  config.vm.box = CONFIG[:box]
+  # --- Set up SSH ---
+  config.ssh.insert_key = false
+  public_key_path = File.expand_path(CONFIG[:ssh][:public_key_path])
+  public_key = File.read(public_key_path).strip
+  inline_script = <<~DOC
+    echo 'Adding SSH public key to authorized keys...' &&
+    mkdir -p ~/.ssh &&
+    chmod 700 ~/.ssh &&
+    echo '#{public_key}' >> ~/.ssh/authorized_keys &&
+    chmod 600 ~/.ssh/authorized_keys
+    echo 'Host *' >> ~/.ssh/config
+    echo 'StrictHostKeyChecking no' >> ~/.ssh/config
+    echo 'UserKnownHostsFile /dev/null' >> ~/.ssh/config
+    chmod -R 600 ~/.ssh/config
+    echo 'Connection information:'
+    ip=$(hostname -I | awk '{print $1}')
+    echo ip: $ip
+    echo hostname: $HOSTNAME
+  DOC
+  config.vm.provision :shell, inline: inline_script, privileged: false
+  TARGET_VMS.each do |vm_spec|
+    config.vm.define vm_spec[:name] do |machine|
+      machine.vm.hostname = vm_spec[:hostname]
+      machine.vm.network "public_network",
+        ip: vm_spec[:ip]
+
+      # default router
+      machine.vm.provision "shell",
+        run: "always",
+        inline: "route add default gw 192.168.1.1"
+
+      # delete default gw on eth0
+      machine.vm.provision "shell",
+        run: "always",
+        inline: "eval $(route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }')"
+
+      machine.vm.provider 'virtualbox' do |provider|
+        provider.cpus = vm_spec[:cpus]
+        provider.memory = vm_spec[:memory]
+      end
+    end
+  end
+end
+
+at_exit do
+  if print_info?(ARGV)
+    # Run time info
+    end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    elapsed_time = end_time - START_TIME
+    puts '---'
+    puts "Ended at: #{Time.now.strftime('%H:%M')}"
+    format = '%Ss'
+    format.prepend('%Mm ') if elapsed_time >= 60
+    format.prepend('%Hm ') if elapsed_time >= 3600
+    puts "Elapsed time: #{Time.at(elapsed_time).utc.strftime(format)}"
+  end
+end
