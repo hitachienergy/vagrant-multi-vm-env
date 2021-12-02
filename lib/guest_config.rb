@@ -36,7 +36,7 @@ module GuestConfig
           nameservers:
             addresses: [%<dns1>s, %<dns2>s]
   DOC
-  @network[:apply_cmd][:ubuntu] = 'sudo netplan apply'
+  @network[:apply_cmd][:ubuntu] = 'sudo netplan apply &'
 
   module_function
 
