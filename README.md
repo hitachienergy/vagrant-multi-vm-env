@@ -126,3 +126,4 @@ This project was tested with the following boxes:
 - centos/7
 - generic/rhel7
 - generic/ubuntu1804
+- generic/ubuntu2004

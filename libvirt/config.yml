@@ -1,6 +1,6 @@
 ---
 vm_group: ubuntu-test
-box: generic/ubuntu1804 # centos/7, generic/rhel7
+box: generic/ubuntu2004 # centos/7, generic/rhel7
 vms:
   - name: all-settings-example
     enabled: false
