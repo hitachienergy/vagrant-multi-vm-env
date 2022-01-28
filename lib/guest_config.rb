@@ -1,3 +1,5 @@
+require 'json'
+
 # Configuration to be applied inside VM
 module GuestConfig
   # Extend Hash to create keys dynamically
@@ -5,27 +7,39 @@ module GuestConfig
     def self.new
       Hash.new { |hash, key| hash[key] = new }
     end
+
+    def self.deep_copy(hash)
+      # Marshal.dump throws error: TypeError: can't dump hash with default proc
+      JSON.parse(hash.to_json, symbolize_names: true)
+    end
   end
 
   @network = DynamicHash.new
 
-  # CentOS/RHEL
-  @network[:config_file][:path][:redhat] = '/etc/sysconfig/network-scripts/ifcfg-eth0'
-  @network[:config_file][:content][:redhat] = <<~'DOC'
-    DEVICE=eth0
+  # CentOS/RHEL 7
+  @network[:redhat7][:config_file][:path] = '/etc/sysconfig/network-scripts/ifcfg-eth0'
+  @network[:redhat7][:config_file][:content] = <<~'DOC'
     BOOTPROTO=none
-    ONBOOT=yes
-    PREFIX=%<prefix_length>d
-    IPADDR=%<ip>s
-    GATEWAY=%<gateway_ip>s
+    DEFROUTE=yes
+    DEVICE=eth0
     DNS1=%<dns1>s
     DNS1=%<dns2>s
+    GATEWAY=%<gateway_ip>s
+    IPADDR=%<ip>s
+    NAME=eth0
+    ONBOOT=yes
+    PREFIX=%<prefix_length>d
+    TYPE=Ethernet
   DOC
-  @network[:apply_cmd][:redhat] = 'sudo systemctl restart network --no-block'
+  @network[:redhat7][:apply_cmd] = 'sudo systemctl restart network --no-block'
+
+  # RHEL 8
+  @network[:redhat8] = DynamicHash.deep_copy(@network[:redhat7])
+  @network[:redhat8][:apply_cmd] = 'sudo nmcli con reload && sudo nmcli con down eth0 && sudo nmcli con up eth0 &'
 
   # Ubuntu
-  @network[:config_file][:path][:ubuntu] = '/etc/netplan/01-netcfg.yaml'
-  @network[:config_file][:content][:ubuntu] = <<~'DOC'
+  @network[:ubuntu][:config_file][:path] = '/etc/netplan/01-netcfg.yaml'
+  @network[:ubuntu][:config_file][:content] = <<~'DOC'
     network:
       version: 2
       ethernets:
@@ -36,15 +50,21 @@ module GuestConfig
           nameservers:
             addresses: [%<dns1>s, %<dns2>s]
   DOC
-  @network[:apply_cmd][:ubuntu] = 'sudo netplan apply &'
+  @network[:ubuntu][:apply_cmd] = 'sudo netplan apply &'
 
   module_function
 
   def _get_os_symbol(box)
     pattern_to_os_id_map = {
+      # Debian
       ubuntu: 'ubuntu',
-      centos: 'redhat',
-      rhel: 'redhat'
+      # RHEL 7
+      centos: 'redhat7',
+      rhel7: 'redhat7',
+      # RHEL 8
+      'almalinux/8': 'redhat8',
+      rhel8: 'redhat8',
+      rocky8: 'redhat8'
     }
     key = pattern_to_os_id_map.keys.find { |pattern| box.include?(pattern.to_s) }
     pattern_to_os_id_map[key].to_sym
@@ -53,9 +73,9 @@ module GuestConfig
   def get_templated_network_config(box, template_values)
     os_id = _get_os_symbol(box)
     {
-      config_file_path: @network[:config_file][:path][os_id],
-      config_file_content: format(@network[:config_file][:content][os_id], template_values),
-      apply_cmd: @network[:apply_cmd][os_id]
+      config_file_path: @network[os_id][:config_file][:path],
+      config_file_content: format(@network[os_id][:config_file][:content], template_values),
+      apply_cmd: @network[os_id][:apply_cmd]
     }
   end
 end
