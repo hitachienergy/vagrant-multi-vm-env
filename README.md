@@ -17,10 +17,10 @@ Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv
 - Vagrant: `brew install vagrant`
 - Vagrant Manager: `brew install vagrant-manager`
 
-### Ubuntu
+### Ubuntu/Fedora 35
 
-- Ubuntu with [libvirt](https://ubuntu.com/server/docs/virtualization-libvirt)
-- [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18)
+- [libvirt](https://ubuntu.com/server/docs/virtualization-libvirt)
+- [Vagrant](https://www.vagrantup.com/downloads.html) (tested with v2.2.18 on Ubuntu and v2.2.16 on Fedora 35)
 - Vagrant [libvirt provider](https://github.com/vagrant-libvirt/vagrant-libvirt)
 
 *Other Linux distros should work but are untested.*
