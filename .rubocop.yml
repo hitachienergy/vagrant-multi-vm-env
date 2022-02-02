@@ -1,11 +1,12 @@
+Metrics/AbcSize:
+  Max: 20
+
 Metrics/BlockLength:
   IgnoredMethods:
     - Vagrant.configure
 
 Metrics/MethodLength:
   Max: 15
-  IgnoredMethods:
-    - machine_trigger_after_up!
 
 Style/EndOfLine:
   EnforcedStyle: lf

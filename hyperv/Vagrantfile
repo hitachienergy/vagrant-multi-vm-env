@@ -14,23 +14,17 @@ TARGET_VMS = ConfigFile.get_enabled_vms(CONFIG)
 
 # --- Helpers ---
 
-def machine_trigger_after_up!(trigger, target_ip, network_spec, box, verbosity)
-  # Order matters, reconfigure network on guest first, then change switch.
-  template_values = {
-    ip: target_ip,
-    prefix_length: network_spec[:vnic][:prefix_length],
-    gateway_ip: network_spec[:vnic][:ip],
-    dns1: network_spec[:dns][:dns1],
-    dns2: network_spec[:dns][:dns2]
-  }
-  network_config = GuestConfig.get_templated_network_config(box, template_values)
-  inline_script_template = <<~'DOC'
+def configure_after_vm_up_trigger!(trigger, target_ip, network_spec, box, verbosity)
+  inline_template = <<~'DOC'
     echo 'Replacing file: %<config_file_path>s' &&
     printf '%%s' '%<config_file_content>s' > %<config_file_path>s &&
     echo 'Running command: %<apply_cmd>s' &&
     %<apply_cmd>s
   DOC
-  trigger.run_remote = { inline: format(inline_script_template, network_config) }
+  network_config = GuestConfig.get_network_config(target_ip, network_spec, box)
+
+  # Order matters, apply network configuration on guest first, then change switch on host
+  trigger.run_remote = { inline: format(inline_template, network_config) }
   trigger.ruby do |_, machine|
     HyperV.vm_change_switch(machine.provider_config.vmname, network_spec[:vswitch], verbosity)
   end
@@ -74,6 +68,9 @@ end
 
 Vagrant.configure(2) do |config|
   config.vm.box = CONFIG[:box]
+  # Disable default share to not be asked for username and password
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
   # --- Set up SSH ---
   config.ssh.insert_key = false
   public_key_path = File.expand_path(CONFIG[:ssh][:public_key_path])
@@ -86,14 +83,20 @@ Vagrant.configure(2) do |config|
     chmod 600 ~/.ssh/authorized_keys
   DOC
   config.vm.provision :shell, inline: inline_script, privileged: false
-  # Disable default share to not be asked for username and password
-  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+  network_spec = {
+    dns: CONFIG[:network][:dns],
+    vnic: CONFIG[:network][:nat][:vnic],
+    vswitch: CONFIG[:network][:nat][:vswitch]
+  }
+
   TARGET_VMS.each do |vm_spec|
     config.vm.define vm_spec[:name] do |machine|
-      vm_full_name = "#{CONFIG[:vm_group]}/#{vm_spec[:name]}"
       machine.vm.hostname = vm_spec[:hostname]
+      vm_full_name = "#{CONFIG[:vm_group]}/#{vm_spec[:name]}"
       # use "Default Switch" only when creating VM
       machine.vm.network 'public_network', bridge: 'Default Switch' unless HyperV.vm_exists?(vm_full_name)
+
       machine.vm.provider 'hyperv' do |provider|
         provider.cpus = vm_spec[:cpus]
         provider.memory = vm_spec[:memory]
@@ -102,14 +105,10 @@ Vagrant.configure(2) do |config|
         provider.maxmemory = vm_spec[:memory]
         # Hyper-V assigns MAC address for each adapter dynamically
       end
+
       machine.trigger.after :up do |trigger|
         trigger.name = 'Set static IP inside VM then change switch'
-        network_spec = {
-          dns: CONFIG[:network][:dns],
-          vnic: CONFIG[:network][:nat][:vnic],
-          vswitch: CONFIG[:network][:nat][:vswitch]
-        }
-        machine_trigger_after_up!(trigger, vm_spec[:ip], network_spec, config.vm.box, CONFIG[:settings][:verbosity])
+        configure_after_vm_up_trigger!(trigger, vm_spec[:ip], network_spec, CONFIG[:box], CONFIG[:settings][:verbosity])
       end
     end
   end
