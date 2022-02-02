@@ -1,19 +1,21 @@
 ---
 vm_group: ubuntu-test
-box: generic/ubuntu2004 # centos/7, generic/rhel7
+box: generic/ubuntu2004  # almalinux/8, generic/rocky8, generic/rhel8, generic/ubuntu1804, centos/7, generic/rhel7
 vms:
-  - name: all-settings-example
+  - name: vm-01
+    enabled: true
+  - name: vm-02
+    enabled: true
+  - name: vm-03
+    enabled: false
+
+  # full config example
+  - name: demo
     enabled: false
     # optional
     hostname: demo-01
     cpus: 2
     memory: 2080
-  - name: repo
-    enabled: true
-  - name: pg-01
-    enabled: true
-  - name: pg-02
-    enabled: false
 ssh:
   public_key_path: ~/.ssh/id_rsa.pub
 defaults:

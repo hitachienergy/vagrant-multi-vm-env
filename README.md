@@ -123,7 +123,10 @@ git clone --depth=1 https://github.com/epiphany-platform/vagrant-multi-vm-env.gi
 
 This project was tested with the following boxes:
 
+- almalinux/8
 - centos/7
 - generic/rhel7
+- generic/rhel8
+- generic/rocky8
 - generic/ubuntu1804
 - generic/ubuntu2004
