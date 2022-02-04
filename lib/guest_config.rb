@@ -35,7 +35,8 @@ module GuestConfig
 
   # RHEL 8
   @network[:redhat8] = DynamicHash.deep_copy(@network[:redhat7])
-  @network[:redhat8][:apply_cmd] = 'sudo nmcli con reload && sudo nmcli con down eth0 && sudo nmcli con up eth0 &'
+  @network[:redhat8][:apply_cmd] = 'sudo nmcli con reload && ' \
+    '{ nohup sh -c "sudo nmcli con down eth0 && sudo nmcli con up eth0" > /tmp/vagrant-network-apply.log 2>&1 & }'
 
   # Ubuntu
   @network[:ubuntu][:config_file][:path] = '/etc/netplan/01-netcfg.yaml'
@@ -70,8 +71,17 @@ module GuestConfig
     pattern_to_os_id_map[key].to_sym
   end
 
-  def get_templated_network_config(box, template_values)
+  def get_network_config(target_ip, network_spec, box)
     os_id = _get_os_symbol(box)
+
+    template_values = {
+      ip: target_ip,
+      prefix_length: network_spec[:vnic][:prefix_length],
+      gateway_ip: network_spec[:vnic][:ip],
+      dns1: network_spec[:dns][:dns1],
+      dns2: network_spec[:dns][:dns2]
+    }
+
     {
       config_file_path: @network[os_id][:config_file][:path],
       config_file_content: format(@network[os_id][:config_file][:content], template_values),
