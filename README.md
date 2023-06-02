@@ -28,7 +28,7 @@ Based on the original work found [here](https://github.com/to-bar/vagrant-hyperv
 ## Installation
 
 ```shell
-git clone --depth=1 https://github.com/epiphany-platform/vagrant-multi-vm-env.git
+git clone --depth=1 https://github.com/hitachienergy/vagrant-multi-vm-env.git
 ```
 
 ## Usage
